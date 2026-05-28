@@ -1,27 +1,120 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Ресторан</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
-    </head>
-    <body>
-        <!--[if lt IE 7]>
-            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
-        <![endif]-->
-        
-        <h1>Вітаємо у нашому ресторані<h1>
-        {% for position in positions %}
-            <img src="{{position.image}}">Картинка</img>
-            <p>{{position.name}}</p>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ресторан</title>
 
-        {% endfor %}
-    </body>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f6f8;
+      color: #222;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .btn {
+      background: #4f46e5;
+      color: white;
+      padding: 10px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background: #4338ca;
+    }
+
+    .container {
+      padding: 30px 40px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: #e5e7eb;
+    }
+
+    .card-body {
+      padding: 12px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .empty {
+      text-align: center;
+      color: #666;
+      padding: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Вітаємо у нашому ресторані</h1>
+  <a class="btn" href="/add_position">+ Додати позицію</a>
+</header>
+
+<div class="container">
+
+  {% if positions and positions|length > 0 %}
+    <div class="grid">
+      {% for position in positions %}
+        <div class="card">
+          <img src="{{ position.image }}" alt="{{ position.name }}">
+          <div class="card-body">
+            <p class="card-title">{{ position.name }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">
+      Поки що немає жодної позиції
+    </div>
+  {% endif %}
+
+</div>
+
+</body>
 </html>
