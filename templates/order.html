@@ -99,7 +99,7 @@
       {% if positions and positions|length > 0 %}
         <div class="grid">
           {% for position in positions %}
-            <div class="card" onclick="window.location='/menu/{{ position.id }}'">
+            <div class="card">
               <img src="{{ position.image }}" alt="{{ position.name }}" />
               <div class="card-body">
                 <p class="card-title">{{ position.name }}</p>

@@ -57,7 +57,6 @@
         overflow: hidden;
         box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         transition: transform 0.2s ease;
-        cursor: pointer;
       }
       
       .card:hover {
@@ -96,19 +95,26 @@
     </header>
 
     <div class="container">
-      {% if positions and positions|length > 0 %}
+      {% if position %}
         <div class="grid">
-          {% for position in positions %}
-            <div class="card" onclick="window.location='/menu/{{ position.id }}'">
-              <img src="{{ position.image }}" alt="{{ position.name }}" />
-              <div class="card-body">
-                <p class="card-title">{{ position.name }}</p>
-              </div>
+          <div class="card">
+            <img src="{{ position.image }}" alt="{{ position.name }}" />
+            <div class="card-body">
+              <p class="card-title">{{ position.name }}</p>
+              <p class="card-description">{{ position.description }}</p>
+              <p>Час приготування: {{ position.time }} хвилин</p>
+              <p>
+                Вартість: <b>{{ position.cost }}$</b>
+              </p>
+              <form action="/order" method="post">
+                <input type="hidden" name="id" value="{{ position.id }}">
+                <button class="btn" type="submit">Натисніть щоб додати до замовлення</button>
+              </form>
             </div>
-          {% endfor %}
+          </div>
         </div>
       {% else %}
-        <div class="empty">Поки що немає жодної позиції</div>
+        <div class="empty">Позиція не знайдена</div>
       {% endif %}
     </div>
   </body>

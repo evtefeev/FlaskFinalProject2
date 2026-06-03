@@ -1,13 +1,11 @@
 from os import name
 import os
 import uuid
-
 from flask import Flask, render_template, request
 from database import Menu, Session
-
-
+from flask import session
 app = Flask(__name__)
-
+app.secret_key="3423355uiotyye4354gffdt4t4fdhty53"
 
 @app.route("/")
 def index():
@@ -51,6 +49,35 @@ def add_position():
 
     return render_template("add_position.html")
 
+@app.route("/menu/<id>")
+def menu(id):
+    with Session() as cursor:
+        position = cursor.query(Menu).filter_by(id=id).first()
+    return render_template("position.html", position=position)
 
+@app.route("/order/", methods = ["POST"])
+def order():
+    id = request.form.get('id')
+    with Session() as cursor:
+        position = cursor.query(Menu).filter_by(id=id).first()
+    orders=session.get("my_orders",None)
+    if orders==None:
+        orders=[]
+        print("create order")
+    orders.append(position.id)
+    session["my_orders"]=orders
+    return f"{position.name} Додано до замовлення <a href='/'>головна</a> <a href='/checkout_order/'>оформити</a>"
+
+@app.route("/check_order/")
+def check_orders():
+    return session['my_orders']
+
+@app.route("/checkout_order/")
+def checkout_order():
+    orders=session.get("my_orders",None)
+    with Session() as cursor:
+        positions =  [post for post in cursor.query(Menu).filter_by().all() if post.id in orders]
+    return render_template("order.html",positions=positions)
+    
 if __name__ == "__main__":
     app.run()
