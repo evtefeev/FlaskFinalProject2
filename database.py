@@ -6,7 +6,7 @@ from flask_login import UserMixin
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from sqlalchemy.dialects.postgresql import JSONB
-
+import bcrypt
 
 engine = create_engine(
     "sqlite:///database.db",
@@ -33,6 +33,12 @@ class Users(Base, UserMixin):
     orders = relationship(
         "Orders", foreign_keys="Orders.user_id", back_populates="user"
     )
+
+    def set_password(self, password: str):
+        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    def check_password(self, password: str):
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
 
 
 class Menu(Base):
