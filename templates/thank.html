@@ -95,28 +95,6 @@
       <a class="btn" href="/add_position">+ Додати позицію</a>
     </header>
 
-    <div class="container">
-      {% if positions and positions|length > 0 %}
-        <div class="grid">
-          {% for position in positions %}
-            <div class="card">
-              <img src="{{ position.image }}" alt="{{ position.name }}" />
-              <div class="card-body">
-                <p class="card-title">{{ position.name }}</p>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-        <form action="/checkout_order/" method="post">
-          <label for="location">Введіть номер столка</label>
-          <input type="text" name="location">
-
-          <button type="submit" class="btn">Оформити замовлення</button>
-        </form>
-        
-      {% else %}
-        <div class="empty">Поки що немає жодної позиції</div>
-      {% endif %}
-    </div>
+    <h1>Дякуємо за замовлення!</h1>
   </body>
 </html>

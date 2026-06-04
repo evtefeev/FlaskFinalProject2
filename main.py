@@ -1,11 +1,68 @@
+from datetime import datetime
 from os import name
 import os
 import uuid
-from flask import Flask, render_template, request
-from database import Menu, Session
+from flask import Flask, flash, redirect, render_template, request, url_for
+from database import Menu, Orders, Session, Users
 from flask import session
+from flask_login import LoginManager, current_user, login_user
+
 app = Flask(__name__)
-app.secret_key="3423355uiotyye4354gffdt4t4fdhty53"
+app.secret_key = "3423355uiotyye4354gffdt4t4fdhty53"
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    with Session() as session:
+        return session.query(Users).filter_by(id=user_id).first()
+
+
+@app.route("/register", methods = ['GET','POST'])
+def register():
+    if request.method == 'POST':
+        if request.form.get("csrf_token") != session["csrf_token"]:
+            return "Запит заблоковано!", 403
+        nickname = request.form['nickname']
+        email = request.form['email']
+        password = request.form['password']
+
+        with Session() as cursor:
+            if cursor.query(Users).filter_by(email=email).first() or cursor.query(Users).filter_by(nickname = nickname).first():
+                flash('Користувач з таким email або нікнеймом вже існує!', 'danger')
+                return render_template('register.html',csrf_token=session["csrf_token"])
+
+            new_user = Users(nickname=nickname, email=email)
+            new_user.set_password(password)
+            cursor.add(new_user)
+            cursor.commit()
+            cursor.refresh(new_user)
+            login_user(new_user)
+            return redirect(url_for('home'))
+    return render_template('register.html',csrf_token=session["csrf_token"])
+
+@app.route("/login", methods = ["GET","POST"])
+def login():
+    if request.method == 'POST':
+        if request.form.get("csrf_token") != session["csrf_token"]:
+            return "Запит заблоковано!", 403
+
+        nickname = request.form['nickname']
+        password = request.form['password']
+
+        with Session() as cursor:
+            user = cursor.query(Users).filter_by(nickname = nickname).first()
+            if user and user.check_password(password):
+                login_user(user)
+                return redirect(url_for('home'))
+
+            flash('Неправильний nickname або пароль!', 'danger')
+
+    return render_template('login.html', csrf_token=session["csrf_token"])
+
 
 @app.route("/")
 def index():
@@ -49,35 +106,60 @@ def add_position():
 
     return render_template("add_position.html")
 
+
 @app.route("/menu/<id>")
 def menu(id):
     with Session() as cursor:
         position = cursor.query(Menu).filter_by(id=id).first()
     return render_template("position.html", position=position)
 
-@app.route("/order/", methods = ["POST"])
+
+@app.route("/order/", methods=["POST"])
 def order():
-    id = request.form.get('id')
+    id = request.form.get("id")
     with Session() as cursor:
         position = cursor.query(Menu).filter_by(id=id).first()
-    orders=session.get("my_orders",None)
-    if orders==None:
-        orders=[]
+    orders = session.get("my_orders", None)
+    if orders == None:
+        orders = []
         print("create order")
     orders.append(position.id)
-    session["my_orders"]=orders
+    session["my_orders"] = orders
     return f"{position.name} Додано до замовлення <a href='/'>головна</a> <a href='/checkout_order/'>оформити</a>"
+
 
 @app.route("/check_order/")
 def check_orders():
-    return session['my_orders']
+    return session["my_orders"]
 
-@app.route("/checkout_order/")
+
+@app.route("/checkout_order/", methods=["GET", "POST"])
 def checkout_order():
-    orders=session.get("my_orders",None)
+    orders = session.get("my_orders", None)
     with Session() as cursor:
-        positions =  [post for post in cursor.query(Menu).filter_by().all() if post.id in orders]
-    return render_template("order.html",positions=positions)
-    
+        positions = [
+            post for post in cursor.query(Menu).filter_by().all() if post.id in orders
+        ]
+
+    if request.method == "POST":
+        try:
+            location = request.form.get("location")
+            item = Orders(
+                location=location,
+                user_id=current_user.id,
+                order_list=orders,
+                order_time=datetime.now(),
+            )
+        except AttributeError:
+            return redirect(url_for('login'))
+        with Session() as cursor:
+            cursor.add(item)
+            cursor.commit()
+        session.pop("my_orders")
+        return render_template("thank.html")
+
+    return render_template("order.html", positions=positions)
+
+
 if __name__ == "__main__":
     app.run()
