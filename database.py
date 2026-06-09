@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 
 from sqlalchemy import DateTime, ForeignKey, String, create_engine
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
@@ -7,9 +8,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from sqlalchemy.dialects.postgresql import JSONB
 import bcrypt
+import dotenv
+
+dotenv.load_dotenv()
 
 engine = create_engine(
-    "sqlite:///database.db",
+    os.environ.get('DATABASE_URL'),
     echo=True,
 )
 Session = sessionmaker(bind=engine)
@@ -49,6 +53,7 @@ class Menu(Base):
     description: Mapped[str] = mapped_column(String(500))
     time: Mapped[int] = mapped_column()
     cost: Mapped[int] = mapped_column(nullable=False)
+    show: Mapped[bool] = mapped_column(default=True)
 
 
 class Orders(Base):
